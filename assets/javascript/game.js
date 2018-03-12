@@ -14,14 +14,67 @@ var rpsTextArray = ["Rock", "Paper", "Scissor"];
 var rpsChoiceArray = ["R", "P", "S"];
 
  // ...
-var playerText = document.getElementById("player-choice");
-var computerText = document.getElementById("computer-choice");
+var playerOneText = document.getElementById("player-one-choice");
+var playerTwoText = document.getElementById("player-two-choice");
+var playerText = "";
 var resultText = document.getElementById("who-won");
-var computerChoice = 0;
 var playerChoice = 0;
 var playerKeypress = "r";
-var computerKeypress = "r";
- 
+var playerOneChoice = 0;
+var playerTwoChoice = 0;
+var playerOneKeypress = "r";
+var playerTwoKeypress = "r";
+
+// Initialize Firebase (YOUR OWN APP)
+// Make sure that your configuration matches your firebase script version
+// (Ex. 3.0 != 3.7.1)
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDqQmnoN1CmZYNpWozEzBotXLuDZTRMKiM",
+    authDomain: "rockpaperscissors-7f2e8.firebaseapp.com",
+    databaseURL: "https://rockpaperscissors-7f2e8.firebaseio.com",
+    projectId: "rockpaperscissors-7f2e8",
+    storageBucket: "",
+    messagingSenderId: "789774774986"
+  };
+  firebase.initializeApp(config);
+
+// Create a variable to reference the database
+// var database = ...
+var database = firebase.database();
+
+var gameCount = 0;
+var winCount = [ 0, 0 ];
+var numPlayers = 0;
+
+database.ref() .on('value', function(snapshot) {
+    if (snapshot.child("gameCounter").exists()) 
+        gameCount = parseInt(snapshot.val().gameCounter);
+    if (snapshot.child("playerOne_WinLoss").exists()) 
+        winCount[0] = parseInt(snapshot.val().playerOne_WinLoss);
+    if (snapshot.child("playerTwo_WinLoss").exists()) 
+        winCount[1] = parseInt(snapshot.val().playerTwo_WinLoss);
+    if (snapshot.child("playerCount").exists()) 
+        numPlayers =  parseInt(snapshot.val().playerCount);
+    if (snapshot.child("playerOne_Choice").exists()) 
+        playerOneChoice = snapshot.val().playerOne_Choice;
+    if (snapshot.child("playerTwo_Choice").exists())         
+        playerTwoChoice = snapshot.val().playerTwo_Choice;
+    console.log('GameCount: ' + gameCount);
+    console.log('Player #1 Win Count: ' + winCount[0]);
+    console.log('Player #2 Win Count: ' + winCount[1]);
+    console.log('Number of Players: ' + numPlayers);
+    console.log('Player #1 Choice: ' + playerOneChoice);
+    console.log('Player #2 Choice: ' + playerTwoChoice);
+    $('who-won').text('Result: ');
+    $("#games-played").text('Games Played: ' + gameCount);
+    $("#player-one-wins").text('Player #1 Win Count: ' + winCount[0]);
+    $("#player-two-wins").text('Player #2 Win Count: ' + winCount[1]);
+    $("#player-count").text('Number of Players: ' + numPlayers);
+    $('#player-one-choice').text('Player #1 Choose: ' + rpsTextArray[playerOneChoice]);
+    $('#player-two-choice').text('Player #2 Choose: ' + rpsTextArray[playerTwoChoice]);  
+  })
+  
  document.onkeyup = function(event)
  {
      playerKeypress = event.key;
@@ -36,41 +89,115 @@ var computerKeypress = "r";
     if (playerChoice != -1) // If valid user choice then let computer go
     { 
         playerText.textContent = "You Picked: " + rpsTextArray[playerChoice];
-        console.log("player picked" + playerKeypress );
-        computerChoice = Math.random() * 3.0;
-        if ( computerChoice < 1.0 )
-            { computerKeypress = "r"; computerChoice = 0; }
-        else if ((computerChoice >= 1.0) && (computerChoice < 2.0))
-            { computerKeypress = "r"; computerChoice = 1; }
-        else if ( computerChoice > 2.0 )
-            { computerKeypress = "r"; computerChoice = 2; }
-        else computerKeypress = "u"; // Unknown
-        computerText.textContent = "Computer Picked: " + rpsTextArray[computerChoice];
-        console.log("computer picked" + computerKeypress);
+        console.log("player picked " + playerKeypress );
+        playerOneKeypress = playerKeypress;
+        playerOneChoice = playerChoice;
+
+        if (numPlayers == 1)
+        {
+            computerChoice = Math.random() * 3.0;
+            if ( computerChoice < 1.0 )
+                { computerKeypress = "r"; computerChoice = 0; }
+            else if ((computerChoice >= 1.0) && (computerChoice < 2.0))
+                { computerKeypress = "r"; computerChoice = 1; }
+            else if ( computerChoice > 2.0 )
+                { computerKeypress = "r"; computerChoice = 2; }
+            else computerKeypress = "u"; // Unknown
+            playerTwoText.textContent = "Computer Picked: " + rpsTextArray[computerChoice];
+            console.log("computer picked " + computerKeypress);
+            playerTwoKeypress = computerKeypress;
+            playerTwoChoice = computerChoice;
+        }
+        else
+        {
+            playerTwoText.textContent = "Player Two Picked: " + playerKeypress;
+            computerKeypress = playerKeypress;
+            playerTwoKeypress = playerKeypress;
+            playerTwoChoice = playerChoice;
+        }
     }
     console.log( playerKeypress );
     console.log( playerChoice );
-    console.log( computerKeypress );
-    console.log( computerChoice );
 
     // See who won
+    let playerWon = false;
+    let computerWon = false;
     // Check for a draw
     if (playerKeypress === computerKeypress)
-        resultText.textContent = "Draw";
+        playerWon = computerWon = true; // Draw
     else if (( playerKeypress === "r" ) && ( computerKeypress === "p" ))
-        resultText.textContent = "Player Wins";
+        playerWon = true; // Player Wins
     else if (( playerKeypress === "r" ) && ( computerKeypress === "s" ))
-        resultText.textContent = "Computer Wins"
+        computerWon = true; // Computer Wins
     else if (( playerKeypress === "p" ) && ( computerKeypress === "r" ))
-        resultText.textContent = "Player Wins";
+        playerWon = true;
     else if (( playerKeypress === "p" ) && ( computerKeypress === "s" ))
-        resultText.textContent = "Computer Wins";
+        computerWon = true;
     else if (( playerKeypress === "s" ) && ( computerKeypress === "p" ))
-        resultText.textContent = "Player Wins";
+        playerWon = true;
     else if (( playerKeypress === "s" ) && ( computerKeypress === "r" ))
-        resultText.textContent = "Computer Wins"    
+        computerWon = true;    
     else
+        playerWon = computerWon = false; // Result unkown
+
+    // Setup the output text based on the results
+    if( playerWon && !computerWon )
+    {
+        console.log("Player Wins")
+        resultText.textContent = "Player Wins";
+        gameCount += 1;
+        winCount[0] += 1;
+        playerWon = computerWon = false;
+    }
+    else if( !playerWon && computerWon )
+    {
+        console.log("Computer Wins");
+        resultText.textContent = "Computer Wins";
+        gameCount += 1;
+        winCount[1] += 1;
+        playerWon = computerWon = false;
+    }
+    else if (playerWon && computerWon)
+    {
+        console.log("Draw");
+        resultText.textContent = "Draw";
+        gameCount +=1;
+        playerWon = computerWon = false;
+    }
+    else
+    {
+        console.log("Unkown");
         resultText.textContent = "Result Unknown";
+        gameCount += 1; 
+        playerWon = computerWon = false;
+    }
     console.log(resultText.textContent );
+    $('who-won').text('Result: ' + resultText.textContent);
+    $("#games-played").text('Games Played: ' + gameCount);
+    $("#player-one-wins").text('Player #1 Win Count: ' + winCount[0]);
+    $("#player-two-wins").text('Player #2 Win Count: ' + winCount[1]);
+    $("#player-count").text('Number of Players: ' + numPlayers);
+    $('#player-one-choice').text('Player #1 Choose: ' + rpsTextArray[playerOneChoice]);
+    $('#player-two-choice').text('Player #2 Choose: ' + rpsTextArray[playerTwoChoice]);  
+    console.log('GameCount: ' + gameCount);
+    console.log('Player #1 Win Count: ' + winCount[0]);
+    console.log('Player #2 Win Count: ' + winCount[1]);
+    console.log('Number of Players: ' + numPlayers);
+    console.log('Player #1 Choice: ' + playerOneChoice);
+    console.log('Player #2 Choice: ' + playerTwoChoice);
+    console.log('Player Keypress: ' + playerKeypress);
+    console.log('Player Choice: ' + playerChoice);
+  
+    database.ref().update({
+        playerCount: numPlayers,
+        gameCounter: gameCount,
+        playerOne_WinLoss: winCount[0],
+        playerOne_WinLoss: winCount[1],
+        playerOne_Choice: playerOneChoice,
+        playerTwo_Choice: playerTwoChoice
+    });
  };
+
+
+
 
