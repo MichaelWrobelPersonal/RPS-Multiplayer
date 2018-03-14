@@ -24,6 +24,8 @@ var playerOneChoice = 0;
 var playerTwoChoice = 0;
 var playerOneKeypress = "r";
 var playerTwoKeypress = "r";
+var playerOneName = "Mike";
+var playerTwoName = "HAL";
 
 // Initialize Firebase (YOUR OWN APP)
 // Make sure that your configuration matches your firebase script version
@@ -60,25 +62,31 @@ database.ref() .on('value', function(snapshot) {
         playerOneChoice = snapshot.val().playerOne_Choice;
     if (snapshot.child("playerTwo_Choice").exists())         
         playerTwoChoice = snapshot.val().playerTwo_Choice;
+    if (snapshot.child("playerOne_Name").exists()) 
+        playerOneName = snapshot.val().playerOne_Name;
+    if (snapshot.child("playerTwo_Name").exists())         
+        playerTwoName = snapshot.val().playerTwo_Name;
     console.log('GameCount: ' + gameCount);
+    console.log('Player #1 Name: ' + playerOneName);   
     console.log('Player #1 Win Count: ' + winCount[0]);
-    console.log('Player #2 Win Count: ' + winCount[1]);
-    console.log('Number of Players: ' + numPlayers);
     console.log('Player #1 Choice: ' + playerOneChoice);
+    console.log('Player #2 Name: ' + playerTwoName);   
+    console.log('Player #2 Win Count: ' + winCount[1]);
     console.log('Player #2 Choice: ' + playerTwoChoice);
+    console.log('Number of Players: ' + numPlayers);
     $('who-won').text('Result: ');
     $("#games-played").text('Games Played: ' + gameCount);
-    $("#player-one-wins").text('Player #1 Win Count: ' + winCount[0]);
-    $("#player-two-wins").text('Player #2 Win Count: ' + winCount[1]);
+    $("#player-one-wins").text(playerOneName + ' Win Count: ' + winCount[0]);
+    $("#player-two-wins").text(playerTwoName + ' Win Count: ' + winCount[1]);
     $("#player-count").text('Number of Players: ' + numPlayers);
     if( playerOneChoice != -1)
-        $('#player-one-choice').text('Player #1 Choice: ' + rpsTextArray[playerOneChoice]);
+        $('#player-one-choice').text(playerOneName + ' Choice: ' + rpsTextArray[playerOneChoice]);
     else
-        $('#player-one-choice').text('Player #1 Choice: Unknown');
+        $('#player-one-choice').text(playerOneName + ' Choice: Unknown');
     if( playerTwoChoice != -1)
-        $('#player-two-choice').text('Player #2 Choice: ' + rpsTextArray[playerTwoChoice]);  
+        $('#player-two-choice').text(playerTwoName + ' Choice: ' + rpsTextArray[playerTwoChoice]);  
     else
-        $('#player-one-choice').text('Player #2 Choice: Unknown');
+        $('#player-one-choice').text(playerTwoName + ' Choice: Unknown');
   })
   
  document.onkeyup = function(event)
@@ -102,8 +110,8 @@ database.ref() .on('value', function(snapshot) {
         playerText.textContent = "You Picked: " + rpsTextArray[playerChoice];
         console.log("player picked " + playerKeypress );
 
-        if (numPlayers == 1)
-        {
+        if (numPlayers == 1) // One player plays againts computer
+        {   
             computerChoice = Math.random() * 3.0;
             if ( computerChoice < 1.0 )
                 { computerKeypress = "r"; computerChoice = 0; }
@@ -117,12 +125,23 @@ database.ref() .on('value', function(snapshot) {
             playerTwoKeypress = computerKeypress;
             playerTwoChoice = computerChoice;
         }
-        else
+        else if(numPlayers == 2) // Another player is playing
         {
             playerTwoText.textContent = "Player Two Picked: " + playerKeypress;
             computerKeypress = playerKeypress;
             playerTwoKeypress = playerKeypress;
             playerTwoChoice = playerChoice;
+        }
+        else // Zero or otherwise out of bounds
+        { // Set values to display/store something for this corner case
+            playerOneText.textContent = "Player One Picked: Nothing";
+            playerKeypress = '';
+            playerOneKeypress = '';
+            playerTwoChoice = -1;
+            playerTwoText.textContent = "Player Two Picked: Nothing";
+            computerKeypress = '';
+            playerTwoKeypress = '';
+            playerTwoChoice = -1;
         }
     }
     console.log( playerKeypress );
@@ -182,29 +201,33 @@ database.ref() .on('value', function(snapshot) {
     console.log(resultText.textContent );
     $('who-won').text('Result: ' + resultText.textContent);
     $("#games-played").text('Games Played: ' + gameCount);
-    $("#player-one-wins").text('Player #1 Win Count: ' + winCount[0]);
-    $("#player-two-wins").text('Player #2 Win Count: ' + winCount[1]);
+    $("#player-one-wins").text(playerOneName + ' Win Count: ' + winCount[0]);
+    $("#player-two-wins").text(playerTwoName + ' Win Count: ' + winCount[1]);
     $("#player-count").text('Number of Players: ' + numPlayers);
     if( playerOneChoice != -1)
-        $('#player-one-choice').text('Player #1 Choice: ' + rpsTextArray[playerOneChoice]);
+        $('#player-one-choice').text(playerOneName + ' Choice: ' + rpsTextArray[playerOneChoice]);
     else
-        $('#player-one-choice').text('Player #1 Choice: Unknown');
+        $('#player-one-choice').text(playerOneName + ' Choice: Unknown');
     if( playerTwoChoice != -1)
-        $('#player-two-choice').text('Player #2 Choice: ' + rpsTextArray[playerTwoChoice]);  
+        $('#player-two-choice').text(playerTwoName + ' Choice: ' + rpsTextArray[playerTwoChoice]);  
     else
-        $('#player-one-choice').text('Player #2 Choice: Unknown');
+        $('#player-one-choice').text(playerTwoName + ' Choice: Unknown');
     console.log('GameCount: ' + gameCount);
+    console.log('Player #1 Name: ' + playerOneName);
     console.log('Player #1 Win Count: ' + winCount[0]);
-    console.log('Player #2 Win Count: ' + winCount[1]);
-    console.log('Number of Players: ' + numPlayers);
     console.log('Player #1 Choice: ' + playerOneChoice);
+    console.log('Player #2 Name: ' + playerTwoName);
+    console.log('Player #2 Win Count: ' + winCount[1]);
     console.log('Player #2 Choice: ' + playerTwoChoice);
+    console.log('Number of Players: ' + numPlayers);
     console.log('Player Keypress: ' + playerKeypress);
     console.log('Player Choice: ' + playerChoice);
   
     database.ref().update({
         playerCount: numPlayers,
         gameCounter: gameCount,
+        playerOne_Name: playerOneName,
+        playerTwo_Name: playerTwoName,
         playerOne_WinLoss: winCount[0],
         playerTwo_WinLoss: winCount[1],
         playerOne_Choice: playerOneChoice,
