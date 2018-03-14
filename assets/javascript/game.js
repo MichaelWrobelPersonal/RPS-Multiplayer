@@ -71,8 +71,14 @@ database.ref() .on('value', function(snapshot) {
     $("#player-one-wins").text('Player #1 Win Count: ' + winCount[0]);
     $("#player-two-wins").text('Player #2 Win Count: ' + winCount[1]);
     $("#player-count").text('Number of Players: ' + numPlayers);
-    $('#player-one-choice').text('Player #1 Choose: ' + rpsTextArray[playerOneChoice]);
-    $('#player-two-choice').text('Player #2 Choose: ' + rpsTextArray[playerTwoChoice]);  
+    if( playerOneChoice != -1)
+        $('#player-one-choice').text('Player #1 Choice: ' + rpsTextArray[playerOneChoice]);
+    else
+        $('#player-one-choice').text('Player #1 Choice: Unknown');
+    if( playerTwoChoice != -1)
+        $('#player-two-choice').text('Player #2 Choice: ' + rpsTextArray[playerTwoChoice]);  
+    else
+        $('#player-one-choice').text('Player #2 Choice: Unknown');
   })
   
  document.onkeyup = function(event)
@@ -85,13 +91,16 @@ database.ref() .on('value', function(snapshot) {
      else if ((playerKeypress == "S") || (playerKeypress == "s"))
         { playerChoice = 2; playerKeypress = "s" }
      else playerChoice = -1; // no valid choice
+
+    // Assigne the choice to player one
+    playerOneKeypress = playerKeypress;
+    playerOneChoice = playerChoice;
+
      // Let computer choose and display results
     if (playerChoice != -1) // If valid user choice then let computer go
     { 
         playerText.textContent = "You Picked: " + rpsTextArray[playerChoice];
         console.log("player picked " + playerKeypress );
-        playerOneKeypress = playerKeypress;
-        playerOneChoice = playerChoice;
 
         if (numPlayers == 1)
         {
@@ -168,7 +177,6 @@ database.ref() .on('value', function(snapshot) {
     {
         console.log("Unkown");
         resultText.textContent = "Result Unknown";
-        gameCount += 1; 
         playerWon = computerWon = false;
     }
     console.log(resultText.textContent );
@@ -177,8 +185,14 @@ database.ref() .on('value', function(snapshot) {
     $("#player-one-wins").text('Player #1 Win Count: ' + winCount[0]);
     $("#player-two-wins").text('Player #2 Win Count: ' + winCount[1]);
     $("#player-count").text('Number of Players: ' + numPlayers);
-    $('#player-one-choice').text('Player #1 Choose: ' + rpsTextArray[playerOneChoice]);
-    $('#player-two-choice').text('Player #2 Choose: ' + rpsTextArray[playerTwoChoice]);  
+    if( playerOneChoice != -1)
+        $('#player-one-choice').text('Player #1 Choice: ' + rpsTextArray[playerOneChoice]);
+    else
+        $('#player-one-choice').text('Player #1 Choice: Unknown');
+    if( playerTwoChoice != -1)
+        $('#player-two-choice').text('Player #2 Choice: ' + rpsTextArray[playerTwoChoice]);  
+    else
+        $('#player-one-choice').text('Player #2 Choice: Unknown');
     console.log('GameCount: ' + gameCount);
     console.log('Player #1 Win Count: ' + winCount[0]);
     console.log('Player #2 Win Count: ' + winCount[1]);
@@ -192,7 +206,7 @@ database.ref() .on('value', function(snapshot) {
         playerCount: numPlayers,
         gameCounter: gameCount,
         playerOne_WinLoss: winCount[0],
-        playerOne_WinLoss: winCount[1],
+        playerTwo_WinLoss: winCount[1],
         playerOne_Choice: playerOneChoice,
         playerTwo_Choice: playerTwoChoice
     });
