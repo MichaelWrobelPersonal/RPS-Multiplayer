@@ -69,32 +69,32 @@ database.ref() .on('value', function(snapshot) {
     console.log('Player #2 Choice: ' + playerTwoChoice);
     $('who-won').text('Result: ');
     $("#games-played").text('Games Played: ' + gameCount);
-    $("#player-one-wins").text('Player #1 Win Count: ' + winCount[0]);
-    $("#player-two-wins").text('Player #2 Win Count: ' + winCount[1]);
+    $("#player-one-wins").text('White Spy Win Count: ' + winCount[0]);
+    $("#player-two-wins").text('Black Spy Win Count: ' + winCount[1]);
     $("#player-count").text('Number of Players: ' + numPlayers);
-    $('#player-one-choice').text('Player #1 Choose: ' + rpsTextArray[playerOneChoice]);
-    $('#player-two-choice').text('Player #2 Choose: ' + rpsTextArray[playerTwoChoice]);  
+    $('#player-one-choice').text('White Spy Choice: ' + rpsTextArray[playerOneChoice]);
+    $('#player-two-choice').text('Black Spy Choice: ' + rpsTextArray[playerTwoChoice]);  
   })
   
 $('#player-one-choice').on('click', function() {
     if ( thisClientNumber != 1 )
     {
-        playerOneName = "Player One";
+        playerOneName = "White Spy";
         thisClientNumber = 1;
         numPlayers += 1;
         if (numPlayers > 2) { numPlayers = 2; }
-        $("player-info").text("Playing as player One");
+        $("player-info").text("Playing as White Spy");
     }
 });
 
 $('#player-two-choice').on('click', function() {
     if ( thisClientNumber != 2 )
     {
-        playerTwoName = "Player Two";
+        playerTwoName = "Black Spy";
         thisClientNumber = 2;
         numPlayers += 1;
         if (numPlayers > 2) { numPlayers = 2; }
-        $("player-info").text("Playing as player Two");
+        $("player-info").text("Playing as Black Spy");
     }
 });
 
@@ -111,11 +111,11 @@ $("#clear-game").on("click", function() {
         playerCount: numPlayers,
         gameCounter: gameCount,
         playerOne_WinLoss: winCount[0],
-        playerOne_WinLoss: winCount[1],
+        playerTwo_WinLoss: winCount[1],
         playerOne_Choice: playerOneChoice,
         playerTwo_Choice: playerTwoChoice
     });
-    $("player-info").text("Choose Player 1 or 2 to Start");    
+    $("player-info").text("Choose White Spy or Black Spy to Start");    
 });
 
  document.onkeyup = function(event)
@@ -127,27 +127,27 @@ $("#clear-game").on("click", function() {
         { playerChoice = 1; playerKeypress = "p" }
      else if ((playerKeypress == "S") || (playerKeypress == "s"))
         { playerChoice = 2; playerKeypress = "s" }
-     else if ((playerKeypress = '1' && thisClientNumber == -1))
+     else if (((playerKeypress = 'W') || (playerKeypress == "w")) && thisClientNumber == -1)
         {
             if ( thisClientNumber != 1 )
             {
-                playerOneName = "Player One";
+                playerOneName = "White Spy";
                 thisClientNumber = 1;
                 numPlayers += 1;
                 if (numPlayers > 2) { numPlayers = 2; }
-                $("player-info").text("Playing as player One");
+                $("player-info").text("Playing as White Spy");
                 return;
             }
         }
-    else if ((playerKeypress = '2' && thisClientNumber == -1))
+    else if (((playerKeypress == 'B' || playerKeypress == "b")) && thisClientNumber == -1)
         {
             if ( thisClientNumber != 2 )
             {
-                playerOneName = "Player Two";
+                playerOneName = "Blck Spy";
                 thisClientNumber = 2;
                 numPlayers += 1;
                 if (numPlayers > 2) { numPlayers = 2; }
-                $("player-info").text("Playing as player Two");
+                $("player-info").text("Playing as Black Spy");
                 return;
             }
         }
@@ -179,9 +179,9 @@ $("#clear-game").on("click", function() {
             if ( computerChoice < 1.0 )
                 { computerKeypress = "r"; computerChoice = 0; }
             else if ((computerChoice >= 1.0) && (computerChoice < 2.0))
-                { computerKeypress = "r"; computerChoice = 1; }
+                { computerKeypress = "p"; computerChoice = 1; }
             else if ( computerChoice > 2.0 )
-                { computerKeypress = "r"; computerChoice = 2; }
+                { computerKeypress = "s"; computerChoice = 2; }
             else computerKeypress = "u"; // Unknown
             playerTwoText.textContent = "Computer Picked: " + rpsTextArray[computerChoice];
             console.log("computer picked " + computerKeypress);
@@ -222,16 +222,16 @@ $("#clear-game").on("click", function() {
     // Setup the output text based on the results
     if( playerOneWon && !playerTwoWon )
     {
-        console.log("Player One Wins")
-        resultText.textContent = "Player One Wins";
+        console.log("White Spy Wins")
+        resultText.textContent = "White Spy Wins";
         gameCount += 1;
         winCount[0] += 1;
         playerOneWon = playerTwoWon = false;
     }
     else if( !playerOneWon && playerTwoWon )
     {
-        console.log("Player Two Wins");
-        resultText.textContent = "Player Two Wins";
+        console.log("Blck Spy Wins");
+        resultText.textContent = "Black Spy Wins";
         gameCount += 1;
         winCount[1] += 1;
         playerOneWon = playerTwoWon = false;
@@ -271,7 +271,7 @@ $("#clear-game").on("click", function() {
         playerCount: numPlayers,
         gameCounter: gameCount,
         playerOne_WinLoss: winCount[0],
-        playerOne_WinLoss: winCount[1],
+        playerTwo_WinLoss: winCount[1],
         playerOne_Choice: playerOneChoice,
         playerTwo_Choice: playerTwoChoice
     });

@@ -15,7 +15,8 @@ body {
         font-family: Arial, 'Helvetica Neue', Helvetica,  sans-serif;
         font-size: 12px;
         line-height: 10px;
-        color: #777777;
+        color: whitesmoke;
+        background-color: gray;
         max-width: 960px;
         margin: 10px;
         clear: both;
@@ -43,4 +44,30 @@ h2, h3 {
 p {
      font-size: 10px;
      color: teal;
+}
+
+/* Site specific settings */
+span
+{
+    color: darkgrey;
+    font-family: Georgia, Times, "Times New Roman", serif;
+    font-weight: 700;
+}
+
+.white-spy {
+    color: white;
+}
+
+.black-spy {
+    color: black;
+}
+
+button #player-info
+{
+    color: #4aaaa5;
+    background-color: #ffffff;
+}
+
+button {
+    max-width: 75px;
 }
