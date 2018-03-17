@@ -5,9 +5,10 @@
 //  there are more than one player present  For the scenario of one player present
 //  the computer will jump in aan play againts the one player.
 //
-//  Other intended changes, use firebase to kee track of layes and scores
-//  improve the look and feel with some CSS beyond the basic defaults.
-//  Allow mosue clicks to choose Rock/Paper/Scissors.
+//  Other intended future changes:
+//      * Utilize Firebase Connection Counting to manage number of playes
+//        and which one is still left playing the computer.
+//      * Allow mouse clicks to choose Rock/Paper/Scissors.
 //
 // RPS Array
 var rpsTextArray = ["Rock", "Paper", "Scissor"];
@@ -47,6 +48,7 @@ var gameCount = 0;
 var winCount = [ 0, 0 ];
 var numPlayers = 0;
 let thisClientNumber = -1; // No choice yet
+let firstSelect = 0;       // The 1st player selection
 
 database.ref() .on('value', function(snapshot) {
     if (snapshot.child("gameCounter").exists()  ) 
@@ -61,12 +63,15 @@ database.ref() .on('value', function(snapshot) {
         playerOneChoice = snapshot.val().playerOne_Choice;
     if (snapshot.child("playerTwo_Choice").exists())         
         playerTwoChoice = snapshot.val().playerTwo_Choice;
+    if (snapshot.child("first_Select").exists())         
+        firstSelect = snapshot.val().first_Select;
     console.log('GameCount: ' + gameCount);
     console.log('Player #1 Win Count: ' + winCount[0]);
     console.log('Player #2 Win Count: ' + winCount[1]);
     console.log('Number of Players: ' + numPlayers);
     console.log('Player #1 Choice: ' + playerOneChoice);
     console.log('Player #2 Choice: ' + playerTwoChoice);
+    console.log('1St Selection: ' + firstSelect);
     $('who-won').text('Result: ');
     $("#games-played").text('Games Played: ' + gameCount);
     $("#player-one-wins").text('White Spy Win Count: ' + winCount[0]);
@@ -77,30 +82,33 @@ database.ref() .on('value', function(snapshot) {
   })
   
 $('#player-one-choice').on('click', function() {
-    if ( thisClientNumber != 1 )
+    if (( thisClientNumber != 1 ) && (first_Select != 1))
     {
         playerOneName = "White Spy";
         thisClientNumber = 1;
+        firstSelect = 1;
         numPlayers += 1;
         if (numPlayers > 2) { numPlayers = 2; }
-        $("player-info").text("Playing as White Spy");
+        $("#player-info").text("Playing as White Spy");
     }
 });
 
 $('#player-two-choice').on('click', function() {
-    if ( thisClientNumber != 2 )
+    if (( thisClientNumber != 2) && (first_Select != 2))
     {
         playerTwoName = "Black Spy";
         thisClientNumber = 2;
+        firstSelect = 2;
         numPlayers += 1;
         if (numPlayers > 2) { numPlayers = 2; }
-        $("player-info").text("Playing as Black Spy");
+        $("#player-info").text("Playing as Black Spy");
     }
 });
 
 $("#clear-game").on("click", function() {
     numPlayers = 0;
     thisClientNumber = -1;
+    firstSelect = 0;
     gameCount = 0;
     playerChoice = playerOneChoice = playerTwoChoice = 0;
     playerKeypress = "";
@@ -113,9 +121,10 @@ $("#clear-game").on("click", function() {
         playerOne_WinLoss: winCount[0],
         playerTwo_WinLoss: winCount[1],
         playerOne_Choice: playerOneChoice,
-        playerTwo_Choice: playerTwoChoice
+        playerTwo_Choice: playerTwoChoice,
+        first_Select: firstSelect
     });
-    $("player-info").text("Choose White Spy or Black Spy to Start");    
+    $("#player-info").text("Choose White Spy or Black Spy to Start");    
 });
 
  document.onkeyup = function(event)
@@ -129,25 +138,27 @@ $("#clear-game").on("click", function() {
         { playerChoice = 2; playerKeypress = "s" }
      else if (((playerKeypress = 'W') || (playerKeypress == "w")) && thisClientNumber == -1)
         {
-            if ( thisClientNumber != 1 )
+            if (( thisClientNumber != 1 ) && ( firstSelect != 1 ))
             {
                 playerOneName = "White Spy";
                 thisClientNumber = 1;
+                firstSelect = 1;
                 numPlayers += 1;
                 if (numPlayers > 2) { numPlayers = 2; }
-                $("player-info").text("Playing as White Spy");
+                $("#player-info").text("Playing as White Spy");
                 return;
             }
         }
     else if (((playerKeypress == 'B' || playerKeypress == "b")) && thisClientNumber == -1)
         {
-            if ( thisClientNumber != 2 )
+            if (( thisClientNumber != 2 ) && ( firstSelect != 2 ))
             {
                 playerOneName = "Blck Spy";
                 thisClientNumber = 2;
+                firstSelect = 2;
                 numPlayers += 1;
                 if (numPlayers > 2) { numPlayers = 2; }
-                $("player-info").text("Playing as Black Spy");
+                $("#player-info").text("Playing as Black Spy");
                 return;
             }
         }
@@ -195,6 +206,7 @@ $("#clear-game").on("click", function() {
         }
     }
     console.log( thisClientNumber );
+    console.log( firstSelect);
     console.log( playerKeypress );
     console.log( playerChoice );
 
@@ -273,7 +285,8 @@ $("#clear-game").on("click", function() {
         playerOne_WinLoss: winCount[0],
         playerTwo_WinLoss: winCount[1],
         playerOne_Choice: playerOneChoice,
-        playerTwo_Choice: playerTwoChoice
+        playerTwo_Choice: playerTwoChoice,
+        first_Select: firstSelect
     });
  };
 
