@@ -1,0 +1,8 @@
+{
+  "gameCounter" : 0,
+  "playerCount" : 1,
+  "playerOne_Choice" : "_",
+  "playerOne_WinLoss" : 0,
+  "playerTwo_Choice" : "_",
+  "playerTwo_WinLoss" : 0
+}

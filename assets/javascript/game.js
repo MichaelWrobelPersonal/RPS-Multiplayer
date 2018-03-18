@@ -6,9 +6,9 @@
 //  the computer will jump in aan play againts the one player.
 //
 //  Other intended future changes:
-//      * Utilize Firebase Connection Counting to manage number of playes
-//        and which one is still left playing the computer.
 //      * Allow mouse clicks to choose Rock/Paper/Scissors.
+//      * Correct logic so that Spys do not act like double agents (black is whte etc)
+//      * Have White/Black show as grey until player selects side, then turn choicue to White/Black
 //
 // RPS Array
 var rpsTextArray = ["Rock", "Paper", "Scissor"];
@@ -25,6 +25,8 @@ var playerOneChoice = 0;
 var playerTwoChoice = 0;
 var playerOneKeypress = "r";
 var playerTwoKeypress = "r";
+var numPlayers = 0;
+var numConnections = 0;
 
 // Initialize Firebase (YOUR OWN APP)
 // Make sure that your configuration matches your firebase script version
@@ -44,9 +46,50 @@ var playerTwoKeypress = "r";
 // var database = ...
 var database = firebase.database();
 
+//////////////////////
+// Connection Logic //
+//////////////////////
+// -------------------------------------------------------------- (CRITICAL - BLOCK) --------------------------- //
+// connectionsRef references a specific location in our database.
+// All of our connections will be stored in this directory.
+var connectionsRef = database.ref("/playerConnections");
+// '.info/connected' is a boolean value, true if the client is connected and false if they are not.
+
+// '.info/connected' is a special location provided by Firebase that is updated every time
+// the client's connection state changes.
+var connectedRef = database.ref(".info/connected");
+
+// When the client's connection state changes...
+connectedRef.on("value", function(snap) {
+
+  // If they are connected..
+  if (snap.val()) {
+
+    // Add user to the connections list.
+    var con = connectionsRef.push(true);
+
+    // Remove user from the connection list when they disconnect.
+    con.onDisconnect().remove();
+  }
+});
+
+// When first loaded or when the connections list changes...
+connectionsRef.on("value", function(snap) {
+
+  // Display the player count.
+  // The number of online users is the number of children in the connections list.
+  numConnections = snap.numChildren();
+  if (numConnections > 2) /* Range limit it */
+      numConnections = 2;
+});
+
+
+////////////////
+// Game Logic //
+////////////////
 var gameCount = 0;
 var winCount = [ 0, 0 ];
-var numPlayers = 0;
+
 let thisClientNumber = -1; // No choice yet
 let firstSelect = 0;       // The 1st player selection
 
@@ -71,7 +114,7 @@ database.ref() .on('value', function(snapshot) {
     console.log('Number of Players: ' + numPlayers);
     console.log('Player #1 Choice: ' + playerOneChoice);
     console.log('Player #2 Choice: ' + playerTwoChoice);
-    console.log('1St Selection: ' + firstSelect);
+    console.log('1st Selection: ' + firstSelect);
     $('who-won').text('Result: ');
     $("#games-played").text('Games Played: ' + gameCount);
     $("#player-one-wins").text('White Spy Win Count: ' + winCount[0]);
@@ -79,7 +122,48 @@ database.ref() .on('value', function(snapshot) {
     $("#player-count").text('Number of Players: ' + numPlayers);
     $('#player-one-choice').text('White Spy Choice: ' + rpsTextArray[playerOneChoice]);
     $('#player-two-choice').text('Black Spy Choice: ' + rpsTextArray[playerTwoChoice]);  
-  })
+    if (firstSelect == 1)
+        $("#player-info").text("Playing as White Spy");
+    else if (firstSelect == 2)
+        $("#player-info").text("Playing as Black Spy");
+    else
+        $("#player-info").text("Choose White Spy or Black Spy to Start");
+
+    // set this user's selection automatically if another person has allready selected a spy
+    if (numConnections == 2)
+    {
+        // Correct number of player count to connection count
+        if (numPlayers == 1)
+        {
+            numPlayers = 2;
+        }
+        // Make the automatic selection to be opposite
+        if (firstSelect == 1)
+            thisClientNumber = 2;
+        else if (firstSelect == 2)
+            thisClientNumber = 1;
+        else
+            thisClientNumber = -1; // no selection
+    }
+    else if (numConnections == 1)
+    {
+        // Correct number of player count to connection count
+        if(numPlayers == 2)
+        {
+            numPlayers == 1;
+        }
+        // Make the selection to be the same
+        if (firstSelect == 1)
+            thisClientNumber = 1;
+        else if (firstSelect == 2)
+            thisClientNumber = 2;
+        else
+            thisClientNumber = -1; // no selection
+    }
+    else
+        thisClientNumber = -1; // no selection
+
+})
   
 $('#player-one-choice').on('click', function() {
     if (( thisClientNumber != 1 ) && (first_Select != 1))
@@ -129,6 +213,7 @@ $("#clear-game").on("click", function() {
 
  document.onkeyup = function(event)
  {
+     playerChoice = -1;  //until determined otherwise, no choice was made.
      playerKeypress = event.key;
      if ((playerKeypress == "R") || (playerKeypress == "r")) 
         { playerChoice = 0; playerKeypress = "r" }
@@ -153,7 +238,7 @@ $("#clear-game").on("click", function() {
         {
             if (( thisClientNumber != 2 ) && ( firstSelect != 2 ))
             {
-                playerOneName = "Blck Spy";
+                playerOneName = "Black Spy";
                 thisClientNumber = 2;
                 firstSelect = 2;
                 numPlayers += 1;
@@ -196,13 +281,25 @@ $("#clear-game").on("click", function() {
             else computerKeypress = "u"; // Unknown
             playerTwoText.textContent = "Computer Picked: " + rpsTextArray[computerChoice];
             console.log("computer picked " + computerKeypress);
-            playerTwoKeypress = computerKeypress;
-            playerTwoChoice = computerChoice;
+            // Make sure the computer choice is assigned to the other player
+            if (thisClientNumber == 1 )
+            {
+                playerTwoKeypress = computerKeypress;
+                playerTwoChoice = computerChoice;
+            } else if (thisClientNumber == 2)
+            {
+                playerOneKeypress = computerKeypress;
+                playerOneChoice = computerChoice;                
+            }
+            else
+            {
+                console.log ('This shoudl not happen');
+            }
         }
         else
         {
-            playerTwoText.textContent = "Player Two Picked: " + playerTwoKeypress;
-  //          computerKeypress = playerKeypress;
+            playerTwoText.textContent = "Black Spy Picked: " + playerTwoKeypress;
+            playerOneText.textContent = "White Spy Picked: " + playerOneKeypress;
         }
     }
     console.log( thisClientNumber );
@@ -265,11 +362,18 @@ $("#clear-game").on("click", function() {
     console.log(resultText.textContent );
     $('who-won').text('Result: ' + resultText.textContent);
     $("#games-played").text('Games Played: ' + gameCount);
-    $("#player-one-wins").text('Player #1 Win Count: ' + winCount[0]);
-    $("#player-two-wins").text('Player #2 Win Count: ' + winCount[1]);
+    $("#player-one-wins").text('White Spy Win Count: ' + winCount[0]);
+    $("#player-two-wins").text('Black Spy Win Count: ' + winCount[1]);
     $("#player-count").text('Number of Players: ' + numPlayers);
-    $('#player-one-choice').text('Player #1 Choose: ' + rpsTextArray[playerOneChoice]);
-    $('#player-two-choice').text('Player #2 Choose: ' + rpsTextArray[playerTwoChoice]);  
+    $('#player-one-choice').text('White Spy Choice: ' + rpsTextArray[playerOneChoice]);
+    $('#player-two-choice').text('Black Spy Choice: ' + rpsTextArray[playerTwoChoice]);
+    if (firstSelect == 1)
+        $("#player-info").text("Playing as White Spy");
+    else if (firstSelect == 2)
+        $("#player-info").text("Playing as Black Spy");
+    else
+        $("#player-info").text("Choose White Spy or Black Spy to Start");
+
     console.log('GameCount: ' + gameCount);
     console.log('Player #1 Win Count: ' + winCount[0]);
     console.log('Player #2 Win Count: ' + winCount[1]);
@@ -278,6 +382,7 @@ $("#clear-game").on("click", function() {
     console.log('Player #2 Choice: ' + playerTwoChoice);
     console.log('Player Keypress: ' + playerKeypress);
     console.log('Player Choice: ' + playerChoice);
+    console.log('1st Selection: ' + firstSelect);
   
     database.ref().update({
         playerCount: numPlayers,
