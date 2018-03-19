@@ -78,7 +78,7 @@ connectionsRef.on("value", function(snap) {
 
   // Display the player count.
   // The number of online users is the number of children in the connections list.
-  numConnections = snap.numChildren();
+  numConnections = snap.numChildren()-1;
   if (numConnections > 2) /* Range limit it */
       numConnections = 2;
 });
@@ -130,38 +130,38 @@ database.ref() .on('value', function(snapshot) {
         $("#player-info").text("Choose White Spy or Black Spy to Start");
 
     // set this user's selection automatically if another person has allready selected a spy
-    if (numConnections == 2)
-    {
-        // Correct number of player count to connection count
-        if (numPlayers == 1)
-        {
-            numPlayers = 2;
-        }
-        // Make the automatic selection to be opposite
-        if (firstSelect == 1)
-            thisClientNumber = 2;
-        else if (firstSelect == 2)
-            thisClientNumber = 1;
-        else
-            thisClientNumber = -1; // no selection
-    }
-    else if (numConnections == 1)
-    {
-        // Correct number of player count to connection count
-        if(numPlayers == 2)
-        {
-            numPlayers == 1;
-        }
-        // Make the selection to be the same
-        if (firstSelect == 1)
-            thisClientNumber = 1;
-        else if (firstSelect == 2)
-            thisClientNumber = 2;
-        else
-            thisClientNumber = -1; // no selection
-    }
-    else
-        thisClientNumber = -1; // no selection
+//    if (numConnections == 2)
+//    {
+//        // Correct number of player count to connection count
+//        if (numPlayers == 1)
+//        {
+//            numPlayers = 2;
+//       }
+//        // Make the automatic selection to be opposite
+//        if (firstSelect == 1)
+//            thisClientNumber = 2;
+//        else if (firstSelect == 2)
+//            thisClientNumber = 1;
+//        else
+//            thisClientNumber = -1; // no selection
+//    }
+//    else if (numConnections == 1)
+//    {
+//        // Correct number of player count to connection count
+//        if(numPlayers == 2)
+//        {
+//            numPlayers == 1;
+//        }
+//        // Make the selection to be the same
+//        if (firstSelect == 1)
+//            thisClientNumber = 1;
+//        else if (firstSelect == 2)
+//            thisClientNumber = 2;
+//        else
+//            thisClientNumber = -1; // no selection
+//    }
+//    else
+//       thisClientNumber = -1; // no selection
 
 })
   
@@ -208,7 +208,8 @@ $("#clear-game").on("click", function() {
         playerTwo_Choice: playerTwoChoice,
         first_Select: firstSelect
     });
-    $("#player-info").text("Choose White Spy or Black Spy to Start");    
+    $("#player-info").text("Choose White Spy or Black Spy to Start");
+    $("#player-info").css({'color': 'lightgrey' });    
 });
 
  document.onkeyup = function(event)
@@ -221,7 +222,7 @@ $("#clear-game").on("click", function() {
         { playerChoice = 1; playerKeypress = "p" }
      else if ((playerKeypress == "S") || (playerKeypress == "s"))
         { playerChoice = 2; playerKeypress = "s" }
-     else if (((playerKeypress = 'W') || (playerKeypress == "w")) && thisClientNumber == -1)
+     else if (((playerKeypress == 'W') || (playerKeypress == "w")) && thisClientNumber == -1)
         {
             if (( thisClientNumber != 1 ) && ( firstSelect != 1 ))
             {
@@ -231,6 +232,7 @@ $("#clear-game").on("click", function() {
                 numPlayers += 1;
                 if (numPlayers > 2) { numPlayers = 2; }
                 $("#player-info").text("Playing as White Spy");
+                $("#player-info").css({'color': 'white' });
                 return;
             }
         }
@@ -244,6 +246,8 @@ $("#clear-game").on("click", function() {
                 numPlayers += 1;
                 if (numPlayers > 2) { numPlayers = 2; }
                 $("#player-info").text("Playing as Black Spy");
+                $("#player-info").css({'color': 'black' });
+ 
                 return;
             }
         }
@@ -368,11 +372,20 @@ $("#clear-game").on("click", function() {
     $('#player-one-choice').text('White Spy Choice: ' + rpsTextArray[playerOneChoice]);
     $('#player-two-choice').text('Black Spy Choice: ' + rpsTextArray[playerTwoChoice]);
     if (firstSelect == 1)
+    {
         $("#player-info").text("Playing as White Spy");
+        $("#player-info").css({'color': 'white' });
+    }
     else if (firstSelect == 2)
+    {
         $("#player-info").text("Playing as Black Spy");
+        $("#player-info").css({'color': 'black' });
+    }
     else
+    {
         $("#player-info").text("Choose White Spy or Black Spy to Start");
+        $("#player-info").css({'color': 'lightgrey' });
+    }
 
     console.log('GameCount: ' + gameCount);
     console.log('Player #1 Win Count: ' + winCount[0]);
