@@ -28,6 +28,12 @@ var playerTwoKeypress = "r";
 var numPlayers = 0;
 var numConnections = 0;
 
+//var playerNum = false;
+var playerOneExists = false;
+var playerTwoExists = false;
+var playerOneData = null;
+var playerTwoData = null;
+
 // Initialize Firebase (YOUR OWN APP)
 // Make sure that your configuration matches your firebase script version
 // (Ex. 3.0 != 3.7.1)
@@ -45,6 +51,7 @@ var numConnections = 0;
 // Create a variable to reference the database
 // var database = ...
 var database = firebase.database();
+var playersRef = database.ref("players");
 
 //////////////////////
 // Connection Logic //
@@ -83,6 +90,102 @@ connectionsRef.on("value", function(snap) {
       numConnections = 2;
 });
 
+// Tracks changes in key which contains player objects
+playersRef.on("value", function(snapshot) {
+
+  // length of the 'players' array
+  numPlayers = snapshot.numChildren();
+
+  // Check to see if players exist
+  playerOneExists = snapshot.child("1").exists();
+  playerTwoExists = snapshot.child("2").exists();
+
+  // Player data objects
+  playerOneData = snapshot.child("1").val();
+  playerTwoData = snapshot.child("2").val();
+  if(playerOneExists) {
+  playerOneData.wins = snapshot.child("1").wins;
+  playerOneData.choice = snapshot.child("1").choice; }
+  if (playerTwoExists) {
+  playerTwoData.wins = snapshot.child("2").wins;
+  playerTwoData.choice = snapshot.child("2").choice; }
+  
+  // If theres a player 1, fill in name and win loss data
+  if (playerOneExists) {
+//    $("#player1-name").text(playerOneData.name);
+    $("#player-one-wins").text(playerOneData.wins);
+//    $("#player1-losses").text("Losses: " + playerOneData.losses);
+  }
+  else
+  {
+    // If there is no player 1, clear win/loss data and show waiting
+//   $("#player1-name").text("Waiting for Player 1");
+    $("#player-one-wins").empty();
+//    $("#player1-losses").empty();
+  }
+
+  // If theres a player 2, fill in name and win/loss data
+  if (playerTwoExists) {
+//    $("#player2-name").text(playerTwoData.name);
+    $("#player-two-wins").text(playerTwoData.wins);
+//    $("#player2-losses").text("Losses: " + playerTwoData.losses);
+  }
+  else
+  {
+    // If no player 2, clear win/loss and show waiting
+ //   $("#player2-name").text("Waiting for Player 2");
+    $("#player-two-wins").empty();
+ //   $("#player2-losses").empty();
+  }
+});
+
+// Function to get in the game
+function getInGame() {
+
+    // For adding disconnects to the chat with a unique id (the date/time the user entered the game)
+    // Needed because Firebase's '.push()' creates its unique keys client side,
+    // so you can't ".push()" in a ".onDisconnect"
+ //   var chatDataDisc = database.ref("/chat/" + Date.now());
+  
+    // Checks for current players, if theres a player one connected, then the user becomes player 2.
+    // If there is no player one, then the user becomes player 1
+    if (currentPlayers < 2) {
+  
+      if (playerOneExists) {
+        playerNum = 2;
+        firstSelect = 2;
+        username = playerTwoName;
+      }
+      else {
+        playerNum = 1;
+        firstSelect = 1;
+        username = playerOneName;
+      }
+  
+      // Creates key based on assigned player number
+      playerRef = database.ref("/players/" + playerNum);
+
+      // Creates player object. 'choice' is unnecessary here, but I left it in to be as complete as possible
+      playerRef.set({
+        name: username,
+        wins: 0,
+        losses: 0,
+        choice: null
+      });
+  
+      // On disconnect remove this user's player object
+      playerRef.onDisconnect().remove();
+
+ //   // Remove name input box and show current player number.
+ //   $("#swap-zone").html("<h2>Hi " + username + "! You are Player " + playerNum + "</h2>");
+      console.log( username + ' is player # ' + playerNum);
+  }
+  else {
+
+    // If current players is "2", will not allow the player to join
+    alert("Sorry, Game Full! Try Again Later!");
+  }
+}  
 
 ////////////////
 // Game Logic //
@@ -96,18 +199,52 @@ let firstSelect = 0;       // The 1st player selection
 database.ref() .on('value', function(snapshot) {
     if (snapshot.child("gameCounter").exists()  ) 
         gameCount = parseInt(snapshot.val().gameCounter);
-    if (snapshot.child("playerOne_WinLoss").exists()) 
-        winCount[0] = parseInt(snapshot.val().playerOne_WinLoss);
-    if (snapshot.child("playerTwo_WinLoss").exists()) 
-        winCount[1] = parseInt(snapshot.val().playerTwo_WinLoss);
-    if (snapshot.child("playerCount").exists()) 
-        numPlayers =  parseInt(snapshot.val().playerCount);
-    if (snapshot.child("playerOne_Choice").exists()) 
-        playerOneChoice = snapshot.val().playerOne_Choice;
-    if (snapshot.child("playerTwo_Choice").exists())         
-        playerTwoChoice = snapshot.val().playerTwo_Choice;
-    if (snapshot.child("first_Select").exists())         
-        firstSelect = snapshot.val().first_Select;
+// REview this, do I want to use thes or the other structure for WinLoss
+        //    if (snapshot.child("playerOne_WinLoss").exists()) 
+//        winCount[0] = parseInt(snapshot.val().playerOne_WinLoss);
+//    if (snapshot.child("playerTwo_WinLoss").exists()) 
+//        winCount[1] = parseInt(snapshot.val().playerTwo_WinLoss);
+//    if (snapshot.child("playerCount").exists()) 
+//        numPlayers =  parseInt(snapshot.val().playerCount);
+    console.log('playerOneExists' + playerOneExists);
+    if(playerOneExists)
+        console.log('playerOneData.wins' + playerOneData.wins);
+    console.log('playerTwoExists' + playerTwoExists);
+    if(playerTwoExists)
+        console.log('playerTwoData.wins' + playerTwoData.wins);
+    if (playerOneExists)
+    { 
+        if ( playerOneData.wins != undefined )
+            winCount[0] = playerOneData.wins;
+ //       else
+ //           winCount[0] = 0;
+    }
+    if (playerTwoExists)
+    {
+        if ( playerTwoData.wins != undefined )
+            winCount[1] = playerTwoData.wins;
+//        else
+//            winCount[1] = 0;  // can't do this, it julst makes thiks stuc
+    }
+    //if (snapshot.child("playerCount").exists()) 
+    //    numPlayers =  parseInt(snapshot.val().playerCount);
+    // relying on the on playerRef to provide the above info
+    if (playerOneExists)
+    {
+        if (playerOneChoice.choice != undefined )
+            playerOneChoice = playerOneData.choice;
+//        else
+//            playerOneChoice = 0;
+    }
+    if (playerTwoExists)
+    {
+        if(playerTwoData.choice != undefined )         
+            playerTwoChoice = playerTwoData.choice;
+//        else
+//            playerTwoChoice = 0;
+    }
+//    if (snapshot.child("first_Select").exists())         
+//        firstSelect = snapshot.val().first_Select;
     console.log('GameCount: ' + gameCount);
     console.log('Player #1 Win Count: ' + winCount[0]);
     console.log('Player #2 Win Count: ' + winCount[1]);
@@ -163,10 +300,10 @@ database.ref() .on('value', function(snapshot) {
 //    else
 //       thisClientNumber = -1; // no selection
 
-})
+});
   
 $('#player-one-choice').on('click', function() {
-    if (( thisClientNumber != 1 ) && (first_Select != 1))
+    if (( thisClientNumber != 1 ) && (firstSelect != 1))
     {
         playerOneName = "White Spy";
         thisClientNumber = 1;
@@ -174,11 +311,12 @@ $('#player-one-choice').on('click', function() {
         numPlayers += 1;
         if (numPlayers > 2) { numPlayers = 2; }
         $("#player-info").text("Playing as White Spy");
+        getInGame();
     }
 });
 
 $('#player-two-choice').on('click', function() {
-    if (( thisClientNumber != 2) && (first_Select != 2))
+    if (( thisClientNumber != 2) && (firstSelect != 2))
     {
         playerTwoName = "Black Spy";
         thisClientNumber = 2;
@@ -186,6 +324,7 @@ $('#player-two-choice').on('click', function() {
         numPlayers += 1;
         if (numPlayers > 2) { numPlayers = 2; }
         $("#player-info").text("Playing as Black Spy");
+        getInGame();
     }
 });
 
@@ -256,6 +395,20 @@ $("#clear-game").on("click", function() {
      // Let computer choose and display results
     if (playerChoice != -1) // If valid user choice then let computer go
     { 
+        // Range check this value befoe using it
+        if((thisClientNumber < 1) || (thisClientNumber>2))
+           return;
+
+        // Creates key based on assigned player number
+        playerRef = database.ref("/players/" + thisClientNumber);
+
+        // Grabs text from keypress choice
+        // Need to set player ref to the correct entry for the selected user
+        console.log(playerRef);
+
+        // Sets the choice in the current player object in firebase
+        playerRef.child("choice").set(playerChoice);
+
         playerText.textContent = "You Picked: " + rpsTextArray[playerChoice];
         console.log("player picked " + playerKeypress );
         if ( thisClientNumber == 1 )
