@@ -21,5 +21,5 @@ For this game of Rock Paper Scissors, I wanted to tie it into a broader theme of
 
 # Contributions
 
-This site is part of my personal portfolio and as such direct contributions to the project are not accepted at this time.  If you have any suggestions, pleaae direct them to me via email (michaelrwrobel@sbcglobal.net).
+This site is part of my personal portfolio and as such direct contributions to the project are not accepted at this time.  If you have any suggestions, please direct them to me via email (michaelrwrobel@sbcglobal.net).
 
