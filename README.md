@@ -5,7 +5,7 @@
 Spy-vs-Spy Rock Paper Scissors - Multiplayer Game that allows you to have two spy's safely play at intrigue using the classic Rock Paper Scissors game.
 
 # Author
-Micheal Wrobel
+Michael Wrobel
 
 # Deployed site
 [RPS-Multiplayer](https://michaelwrobelpersonal.github.io/RPS-Multiplayer/)
@@ -21,5 +21,5 @@ For this game of Rock Paper Scissors, I wanted to tie it into a broader theme of
 
 # Contributions
 
-This site is part of my personal portfolio and as such direct contributions to the project are not accepted an this time.  If you have any suggestions pleaae direct them to me via email (michaelrwrobel@sbcglobal.net).
+This site is part of my personal portfolio and as such direct contributions to the project are not accepted at this time.  If you have any suggestions, pleaae direct them to me via email (michaelrwrobel@sbcglobal.net).
 
